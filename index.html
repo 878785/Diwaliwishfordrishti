@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Happy Diwali, Drishti Ji! ✨🪔</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Great+Vibes&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+    <!-- Canvas Confetti Library -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        diwali: {
+                            gold: '#FFD700',
+                            crimson: '#E91E63',
+                            deepMagenta: '#880E4F',
+                            amber: '#F59E0B',
+                            purple: '#2A085C',
+                            darkPurple: '#120228',
+                            softPink: '#FF85A1',
+                            warmYellow: '#FFF3BF'
+                        }
+                    },
+                    fontFamily: {
+                        heading: ['"Great Vibes"', 'cursive'],
+                        cute: ['"Fredoka"', 'sans-serif'],
+                        body: ['"Quicksand"', 'sans-serif']
+                    },
+                    animation: {
+                        'float-slow': 'float 4s ease-in-out infinite',
+                        'float-delayed': 'float 4s ease-in-out 2s infinite',
+                        'bounce-soft': 'bounceSoft 2s ease-in-out infinite',
+                        'glow-flame': 'glowFlame 1.5s ease-in-out infinite alternate',
+                        'twinkle': 'twinkle 3s ease-in-out infinite alternate',
+                        'wave-hand': 'waveHand 1.2s ease-in-out infinite alternate',
+                        'pulse-heart': 'pulseHeart 1.5s ease-in-out infinite'
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        },
+                        bounceSoft: {
+                            '0%, 100%': { transform: 'translateY(0) scale(1)' },
+                            '50%': { transform: 'translateY(-6px) scale(1.02)' },
+                        },
+                        glowFlame: {
+                            '0%': { transform: 'scale(0.92)', filter: 'drop-shadow(0 0 6px #FFD700) drop-shadow(0 0 14px #FF4500)' },
+                            '100%': { transform: 'scale(1.15)', filter: 'drop-shadow(0 0 14px #FFD700) drop-shadow(0 0 24px #FF0000)' }
+                        },
+                        twinkle: {
+                            '0%': { opacity: '0.25', transform: 'scale(0.8)' },
+                            '100%': { opacity: '1', transform: 'scale(1.2)' }
+                        },
+                        waveHand: {
+                            '0%': { transform: 'rotate(0deg)' },
+                            '100%': { transform: 'rotate(20deg)' }
+                        },
+                        pulseHeart: {
+                            '0%, 100%': { transform: 'scale(1)' },
+                            '50%': { transform: 'scale(1.15)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Mobile ergonomics & touch support */
+        * {
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background: linear-gradient(135deg, #120228 0%, #2A085C 40%, #500A63 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        #fireworksCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 40;
+        }
+        .card-flip {
+            perspective: 1000px;
+        }
+        .card-inner {
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-style: preserve-3d;
+        }
+        .card-flip.flipped .card-inner, .card-flip:active .card-inner {
+            transform: rotateY(180deg);
+        }
+        .card-front, .card-back {
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+        }
+        .card-back {
+            transform: rotateY(180deg);
+        }
+        /* Top Fairy Lights String */
+        .light-string {
+            position: absolute;
+            top: -6px;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: space-around;
+            z-index: 20;
+            pointer-events: none;
+        }
+        .bulb {
+            width: 12px;
+            height: 18px;
+            border-radius: 50%;
+            animation: bulbGlow 1.4s infinite alternate;
+        }
+        @keyframes bulbGlow {
+            0% { opacity: 0.3; box-shadow: 0 0 2px currentColor; }
+            100% { opacity: 1; box-shadow: 0 0 10px currentColor, 0 0 16px currentColor; }
+        }
+    </style>
+</head>
+<body class="text-white relative pb-12 flex flex-col justify-between select-none">
+
+    <!-- Fireworks Overlay Canvas -->
+    <canvas id="fireworksCanvas"></canvas>
+
+    <!-- Twinkling Background Stars -->
+    <div id="starsContainer" class="fixed inset-0 pointer-events-none z-0"></div>
+
+    <!-- Fairy Lights Garland Top Decor -->
+    <div class="light-string">
+        <div class="bulb text-yellow-300 bg-yellow-300" style="animation-delay: 0s;"></div>
+        <div class="bulb text-pink-400 bg-pink-400" style="animation-delay: 0.2s;"></div>
+        <div class="bulb text-amber-400 bg-amber-400" style="animation-delay: 0.4s;"></div>
+        <div class="bulb text-cyan-300 bg-cyan-300" style="animation-delay: 0.6s;"></div>
+        <div class="bulb text-yellow-300 bg-yellow-300" style="animation-delay: 0.8s;"></div>
+        <div class="bulb text-pink-400 bg-pink-400" style="animation-delay: 1.0s;"></div>
+        <div class="bulb text-amber-400 bg-amber-400" style="animation-delay: 1.2s;"></div>
+    </div>
+
+    <!-- Main Container -->
+    <main class="relative z-10 max-w-4xl mx-auto px-4 pt-8 flex-grow w-full">
+
+        <!-- Banner Header -->
+        <div class="text-center my-3 relative">
+            <div class="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md px-4 py-1.5 rounded-full border border-yellow-300/30 mb-3 animate-bounce-soft shadow-lg">
+                <span class="animate-pulse-heart text-pink-400">💖</span>
+                <span class="text-yellow-300 font-cute text-xs sm:text-sm tracking-wide">SPECIAL DIWALI WISHES FOR DRISHTI JI</span>
+                <span class="animate-pulse-heart text-pink-400">💖</span>
+            </div>
+            
+            <h1 class="font-heading text-5xl sm:text-7xl md:text-8xl text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 via-amber-300 to-pink-300 drop-shadow-[0_4px_12px_rgba(255,215,0,0.35)] leading-tight">
+                Happy Diwali, Drishti!
+            </h1>
+            
+            <p class="font-cute text-base sm:text-xl text-pink-200 max-w-lg mx-auto mt-2 px-2 leading-relaxed">
+                Is Diwali saari narazgi ko bye-bye bolte hain... Tumari smile mere liye poori duniya se zyada special hai! , Yaar ab maan jao pls tumari photo nahi thi mere pass isliye ese hi bana diya . Sorry 🪔✨💖
+            </p>
+        </div>
+
+        <!-- Touch Interactive Buttons -->
+        <div class="grid grid-cols-2 sm:flex sm:flex-wrap justify-center gap-2.5 sm:gap-4 my-6 px-1">
+            <button id="lightDiyasBtn" onclick="toggleDiyas()" class="font-cute bg-gradient-to-r from-amber-500 to-red-500 hover:from-amber-400 hover:to-red-400 active:scale-95 text-white text-xs sm:text-base font-bold py-3 px-4 sm:px-6 rounded-2xl shadow-lg transition-all flex items-center justify-center gap-1.5 border border-yellow-300/40">
+                <span class="text-base sm:text-xl" id="diyaIcon">🪔</span> 
+                <span id="diyaBtnText">Light Up Diyas</span>
+            </button>
+
+            <button onclick="launchFireworks()" class="font-cute bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-400 hover:to-pink-400 active:scale-95 text-white text-xs sm:text-base font-bold py-3 px-4 sm:px-6 rounded-2xl shadow-lg transition-all flex items-center justify-center gap-1.5 border border-pink-300/40">
+                <span class="text-base sm:text-xl">🎆</span> Fireworks
+            </button>
+
+            <button onclick="sendTeddyHug()" class="font-cute bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-400 hover:to-rose-500 active:scale-95 text-white text-xs sm:text-base font-bold py-3 px-4 sm:px-6 rounded-2xl shadow-lg transition-all flex items-center justify-center gap-1.5 border border-rose-300/40 col-span-2 sm:col-span-1">
+                <span class="text-base sm:text-xl">🧸</span> Send Big Hug
+            </button>
+
+            <button onclick="toggleMusic()" class="font-cute bg-white/10 hover:bg-white/20 active:scale-95 text-yellow-200 text-xs sm:text-base font-bold py-3 px-4 sm:px-5 rounded-2xl shadow-lg transition-all flex items-center justify-center gap-1.5 border border-white/20 backdrop-blur-sm col-span-2 sm:col-span-1">
+                <span class="text-base sm:text-xl" id="musicIcon">🎵</span> 
+                <span id="musicText">Festive Music</span>
+            </button>
+        </div>
+
+        <!-- Center Feature: Emotional Teddy Bear Hug Section -->
+        <section class="bg-white/10 backdrop-blur-md rounded-3xl p-5 sm:p-7 border border-white/20 shadow-2xl relative my-6 overflow-hidden">
+            <div class="absolute -top-10 -right-10 w-36 h-36 bg-pink-500/20 rounded-full blur-3xl pointer-events-none"></div>
+            <div class="absolute -bottom-10 -left-10 w-36 h-36 bg-yellow-500/20 rounded-full blur-3xl pointer-events-none"></div>
+
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-5">
+                
+                <!-- Main Animated Teddy SVG -->
+                <div class="relative cursor-pointer group flex-shrink-0" onclick="interactMainTeddy()">
+                    <div class="absolute inset-0 bg-yellow-400/20 rounded-full blur-xl group-hover:bg-pink-500/30 transition-all"></div>
+                    
+                    <svg width="150" height="170" viewBox="0 0 160 180" class="relative z-10 transform transition-transform group-hover:scale-105 active:scale-95">
+                        <!-- Left Ear -->
+                        <circle cx="35" cy="40" r="22" fill="#BA7A48" />
+                        <circle cx="35" cy="40" r="13" fill="#FAD4B2" />
+                        <!-- Right Ear -->
+                        <circle cx="125" cy="40" r="22" fill="#BA7A48" />
+                        <circle cx="125" cy="40" r="13" fill="#FAD4B2" />
+                        <!-- Body -->
+                        <ellipse cx="80" cy="120" rx="45" ry="40" fill="#D4905C" />
+                        <ellipse cx="80" cy="122" rx="28" ry="24" fill="#FAD4B2" />
+                        <!-- Head -->
+                        <circle cx="80" cy="70" r="45" fill="#D4905C" />
+                        <!-- Snout -->
+                        <ellipse cx="80" cy="80" rx="20" ry="14" fill="#FAD4B2" />
+                        <ellipse cx="80" cy="74" rx="7" ry="5" fill="#3A1E05" />
+                        <!-- Cute Eyes -->
+                        <circle cx="62" cy="64" r="5" fill="#3A1E05" />
+                        <circle cx="60" cy="62" r="2" fill="#FFFFFF" />
+                        <circle cx="98" cy="64" r="5" fill="#3A1E05" />
+                        <circle cx="96" cy="62" r="2" fill="#FFFFFF" />
+                        <!-- Blush -->
+                        <circle cx="52" cy="76" r="6" fill="#FF85A1" opacity="0.75" />
+                        <circle cx="108" cy="76" r="6" fill="#FF85A1" opacity="0.75" />
+                        <!-- Paws holding Heart -->
+                        <path d="M 68,115 C 68,105 80,100 80,110 C 80,100 92,105 92,115 C 92,125 80,132 80,135 C 80,132 68,125 68,115 Z" fill="#E91E63" class="animate-pulse-heart"/>
+                        <circle cx="45" cy="122" r="11" fill="#BA7A48" />
+                        <circle cx="115" cy="122" r="11" fill="#BA7A48" />
+                        <!-- Waving Hand Right -->
+                        <g class="origin-bottom-left animate-wave-hand">
+                            <ellipse cx="128" cy="95" rx="10" ry="16" fill="#BA7A48" transform="rotate(-25 128 95)" />
+                        </g>
+                        <!-- Diya at feet -->
+                        <path d="M 65,152 Q 80,172 95,152 Z" fill="#F59E0B" stroke="#B45309" stroke-width="2"/>
+                        <ellipse cx="80" cy="147" rx="3.5" ry="7" class="diya-flame animate-glow-flame" fill="#FF4500"/>
+                        <ellipse cx="80" cy="148" rx="1.5" ry="4" class="diya-flame animate-glow-flame" fill="#FFD700"/>
+                    </svg>
+
+                    <div class="bg-white/90 text-purple-900 font-cute text-xs font-bold py-1 px-3 rounded-full shadow-md text-center mt-1 group-hover:bg-yellow-300 transition-colors">
+                        Tap Teddy 🧸✨
+                    </div>
+                </div>
+
+                <!-- Dialogue Speech Box -->
+                <div class="flex-1 text-center sm:text-left">
+                    <div class="inline-block bg-yellow-400/20 text-yellow-300 text-xs px-3 py-1 rounded-full font-cute mb-2 border border-yellow-400/30">
+                        MESSAGE FROM THE HEART ❤️
+                    </div>
+                    <h2 class="font-cute text-xl sm:text-2xl font-bold text-white mb-2">
+                        Drishti My bestie , Aap Maan Jao Na... 🥺
+                    </h2>
+                    <p id="teddySpeechText" class="text-pink-100 font-body text-sm sm:text-base leading-relaxed bg-black/25 p-4 rounded-2xl border border-white/10 min-h-[90px] flex items-center transition-all duration-300">
+                        "Maana ki thodi bhool ho gayi thi, par tum mere liye sabse special ho Drishti ji! Is Diwali saare gusse ko bhool kar ek pyaari si smile de do na... Happy Diwali! 🪔💖"
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Hinglish Wishes Deck (Always Respectful "Tum / Aap") -->
+        <section class="my-8">
+            <div class="text-center mb-6">
+                <h2 class="font-cute text-2xl sm:text-4xl text-yellow-300 font-bold mb-1">
+                    Special Diwali Wishes Deck 💌
+                </h2>
+                <p class="text-pink-200 text-xs sm:text-sm font-body">Tap any card to flip and reveal the message!</p>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                
+                <!-- Card 1 -->
+                <div class="card-flip h-56 w-full cursor-pointer" onclick="toggleCard(this)">
+                    <div class="card-inner relative w-full h-full rounded-2xl shadow-xl">
+                        <!-- Front -->
+                        <div class="card-front absolute inset-0 bg-gradient-to-br from-pink-500 to-purple-600 rounded-2xl p-5 flex flex-col justify-between items-center text-center border border-white/20">
+                            <span class="text-3xl">🪔</span>
+                            <h3 class="font-cute text-lg text-white font-bold">Roshni & Khushiyan</h3>
+                            <div class="w-8 h-1 bg-yellow-300 rounded-full"></div>
+                            <span class="text-xs text-pink-200 font-cute">Tap to Flip 💖</span>
+                        </div>
+                        <!-- Back -->
+                        <div class="card-back absolute inset-0 bg-gradient-to-br from-amber-500 to-pink-600 rounded-2xl p-5 flex flex-col justify-center items-center text-center border border-yellow-300/40">
+                            <p class="font-cute text-sm sm:text-base text-white leading-snug">
+                                " Tumari life me humesha khushiyon aur roshni ki koi kami na rahe. Tum jo chahein wo Tumko mile na milenga toh me de dunga har haal mein! ✨🪔"
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="card-flip h-56 w-full cursor-pointer" onclick="toggleCard(this)">
+                    <div class="card-inner relative w-full h-full rounded-2xl shadow-xl">
+                        <!-- Front -->
+                        <div class="card-front absolute inset-0 bg-gradient-to-br from-purple-600 to-indigo-700 rounded-2xl p-5 flex flex-col justify-between items-center text-center border border-white/20">
+                            <span class="text-3xl">🧸</span>
+                            <h3 class="font-cute text-lg text-white font-bold">Narazgi Khatam Mode</h3>
+                            <div class="w-8 h-1 bg-yellow-300 rounded-full"></div>
+                            <span class="text-xs text-purple-200 font-cute">Tap to Flip 🥺</span>
+                        </div>
+                        <!-- Back -->
+                        <div class="card-back absolute inset-0 bg-gradient-to-br from-rose-500 to-amber-600 rounded-2xl p-5 flex flex-col justify-center items-center text-center border border-yellow-300/40">
+                            <p class="font-cute text-sm sm:text-base text-white leading-snug">
+                                "Maana ki mujhse galti ho gayi, par Tum mere liye sabse pyaari best friend ho. Ab gussa chhod bhi do na please? 🥺💖"
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="card-flip h-56 w-full cursor-pointer" onclick="toggleCard(this)">
+                    <div class="card-inner relative w-full h-full rounded-2xl shadow-xl">
+                        <!-- Front -->
+                        <div class="card-front absolute inset-0 bg-gradient-to-br from-amber-500 to-red-600 rounded-2xl p-5 flex flex-col justify-between items-center text-center border border-white/20">
+                            <span class="text-3xl">🎆</span>
+                            <h3 class="font-cute text-lg text-white font-bold">Bestie Forever</h3>
+                            <div class="w-8 h-1 bg-yellow-300 rounded-full"></div>
+                            <span class="text-xs text-amber-100 font-cute">Tap to Flip ✨</span>
+                        </div>
+                        <!-- Back -->
+                        <div class="card-back absolute inset-0 bg-gradient-to-br from-purple-700 to-pink-600 rounded-2xl p-5 flex flex-col justify-center items-center text-center border border-yellow-300/40">
+                            <p class="font-cute text-sm sm:text-base text-white leading-snug">
+                                "Tumare bina ye festival bilkul phika hai Yaaar! Tum hasti hui hi sabse pyaari lagti ho. Humesha aise hi smile karte raho! 💥🥳"
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 4 -->
+                <div class="card-flip h-56 w-full cursor-pointer" onclick="toggleCard(this)">
+                    <div class="card-inner relative w-full h-full rounded-2xl shadow-xl">
+                        <!-- Front -->
+                        <div class="card-front absolute inset-0 bg-gradient-to-br from-pink-600 to-rose-700 rounded-2xl p-5 flex flex-col justify-between items-center text-center border border-white/20">
+                            <span class="text-3xl">✨</span>
+                            <h3 class="font-cute text-lg text-white font-bold">Ek Pyaara Promise</h3>
+                            <div class="w-8 h-1 bg-yellow-300 rounded-full"></div>
+                            <span class="text-xs text-pink-200 font-cute">Tap to Flip 🤝</span>
+                        </div>
+                        <!-- Back -->
+                        <div class="card-back absolute inset-0 bg-gradient-to-br from-amber-600 to-yellow-500 rounded-2xl p-5 flex flex-col justify-center items-center text-center border border-yellow-300/40">
+                            <p class="font-cute text-sm sm:text-base text-white leading-snug">
+                                "Aage se Tumko kabhi naraz nahi karunga! Aagaye saari mithai aur saare festive sparkles sirf aapke liye! 🍬💕"
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Interactive "Forgive Me?" Poll Box -->
+        <section class="my-8 bg-white/10 backdrop-blur-md rounded-3xl p-6 border border-white/20 text-center relative overflow-hidden shadow-xl min-h-[220px]">
+            <h3 class="font-cute text-2xl sm:text-3xl text-yellow-300 font-bold mb-2">
+                Drishti Ji, Kya Aapne Mujhe Maaf Kar Diya? 🥺
+            </h3>
+            <p id="forgiveStatusText" class="text-pink-100 text-sm font-body mb-5 transition-all duration-300">
+                Choose an option below to give your verdict!
+            </p>
+
+            <div class="flex flex-col sm:flex-row justify-center items-center gap-4 relative min-h-[80px]" id="forgiveButtonsContainer">
+                <button onclick="handleForgiveYes()" class="w-full sm:w-auto font-cute bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 active:scale-95 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-all text-base border border-green-300/40 z-10">
+                    Haan, Maan Gayi! 🥰✨
+                </button>
+
+                <!-- Dynamic Dodging / Runaway Button -->
+                <button id="noForgiveBtn" 
+                        onmouseover="dodgeNoButton()" 
+                        onclick="dodgeNoButton()" 
+                        ontouchstart="dodgeNoButton()" 
+                        class="w-full sm:w-auto font-cute bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-400 hover:to-rose-400 text-white font-bold py-3 px-8 rounded-full shadow-md transition-all duration-200 text-base border border-pink-300/40 cursor-pointer select-none">
+                    Abhi Bhi Soch Rahi Hu 😜
+                </button>
+            </div>
+        </section>
+
+        <!-- Interactive Diya Lighting Grid -->
+        <section class="my-8 bg-black/20 backdrop-blur-md rounded-2xl p-5 border border-white/10 text-center">
+            <h3 class="font-cute text-lg sm:text-xl text-yellow-300 mb-3">Tap any Diya to light it up for Drishti! 🪔</h3>
+            <div class="flex justify-center items-center gap-3 sm:gap-8 flex-wrap">
+                <div class="diya-item cursor-pointer transform hover:scale-125 active:scale-110 transition-transform" onclick="lightSingleDiya(this)">
+                    <svg width="55" height="45" viewBox="0 0 60 50">
+                        <path d="M 10,30 Q 30,50 50,30 Z" fill="#D97706" stroke="#F59E0B" stroke-width="2"/>
+                        <ellipse cx="30" cy="22" rx="4" ry="10" class="diya-flame animate-glow-flame hidden" fill="#FF4500"/>
+                        <ellipse cx="30" cy="23" rx="2" ry="6" class="diya-flame animate-glow-flame hidden" fill="#FFD700"/>
+                    </svg>
+                </div>
+                <div class="diya-item cursor-pointer transform hover:scale-125 active:scale-110 transition-transform" onclick="lightSingleDiya(this)">
+                    <svg width="55" height="45" viewBox="0 0 60 50">
+                        <path d="M 10,30 Q 30,50 50,30 Z" fill="#D97706" stroke="#F59E0B" stroke-width="2"/>
+                        <ellipse cx="30" cy="22" rx="4" ry="10" class="diya-flame animate-glow-flame hidden" fill="#FF4500"/>
+                        <ellipse cx="30" cy="23" rx="2" ry="6" class="diya-flame animate-glow-flame hidden" fill="#FFD700"/>
+                    </svg>
+                </div>
+                <div class="diya-item cursor-pointer transform hover:scale-125 active:scale-110 transition-transform" onclick="lightSingleDiya(this)">
+                    <svg width="70" height="55" viewBox="0 0 60 50">
+                        <path d="M 10,30 Q 30,50 50,30 Z" fill="#B45309" stroke="#FFD700" stroke-width="2"/>
+                        <ellipse cx="30" cy="22" rx="5" ry="12" class="diya-flame animate-glow-flame hidden" fill="#FF4500"/>
+                        <ellipse cx="30" cy="23" rx="2.5" ry="7" class="diya-flame animate-glow-flame hidden" fill="#FFD700"/>
+                    </svg>
+                </div>
+                <div class="diya-item cursor-pointer transform hover:scale-125 active:scale-110 transition-transform" onclick="lightSingleDiya(this)">
+                    <svg width="55" height="45" viewBox="0 0 60 50">
+                        <path d="M 10,30 Q 30,50 50,30 Z" fill="#D97706" stroke="#F59E0B" stroke-width="2"/>
+                        <ellipse cx="30" cy="22" rx="4" ry="10" class="diya-flame animate-glow-flame hidden" fill="#FF4500"/>
+                        <ellipse cx="30" cy="23" rx="2" ry="6" class="diya-flame animate-glow-flame hidden" fill="#FFD700"/>
+                    </svg>
+                </div>
+                <div class="diya-item cursor-pointer transform hover:scale-125 active:scale-110 transition-transform" onclick="lightSingleDiya(this)">
+                    <svg width="55" height="45" viewBox="0 0 60 50">
+                        <path d="M 10,30 Q 30,50 50,30 Z" fill="#D97706" stroke="#F59E0B" stroke-width="2"/>
+                        <ellipse cx="30" cy="22" rx="4" ry="10" class="diya-flame animate-glow-flame hidden" fill="#FF4500"/>
+                        <ellipse cx="30" cy="23" rx="2" ry="6" class="diya-flame animate-glow-flame hidden" fill="#FFD700"/>
+                    </svg>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="relative z-10 text-center py-4 text-pink-200/80 font-cute text-xs sm:text-sm px-4">
+        Created specially for Drishti Ji with lots of love & festive sparkles! Happy Diwali 🪔✨
+    </footer>
+
+    <!-- Interactive JavaScript Logic -->
+    <script>
+        // Star generator
+        function generateStars() {
+            const container = document.getElementById('starsContainer');
+            const starCount = 40;
+            for (let i = 0; i < starCount; i++) {
+                const star = document.createElement('div');
+                star.className = 'absolute bg-yellow-200 rounded-full animate-twinkle';
+                const size = Math.random() * 3 + 1;
+                star.style.width = `${size}px`;
+                star.style.height = `${size}px`;
+                star.style.top = `${Math.random() * 100}%`;
+                star.style.left = `${Math.random() * 100}%`;
+                star.style.animationDelay = `${Math.random() * 3}s`;
+                container.appendChild(star);
+            }
+        }
+        generateStars();
+
+        // Card flip handler for mobile tap responsiveness
+        function toggleCard(cardElem) {
+            cardElem.classList.toggle('flipped');
+            playFestiveSound(600);
+        }
+
+        // Toggle all Diyas
+        let diyasLit = false;
+        function toggleDiyas() {
+            const flames = document.querySelectorAll('.diya-flame');
+            const diyaBtnText = document.getElementById('diyaBtnText');
+            const diyaIcon = document.getElementById('diyaIcon');
+
+            diyasLit = !diyasLit;
+
+            flames.forEach(flame => {
+                if (diyasLit) flame.classList.remove('hidden');
+                else flame.classList.add('hidden');
+            });
+
+            if (diyasLit) {
+                diyaBtnText.innerText = "Diyas Lit!";
+                diyaIcon.innerText = "✨";
+                confetti({
+                    particleCount: 70,
+                    spread: 70,
+                    origin: { y: 0.7 },
+                    colors: ['#FFD700', '#FF4500', '#FF85A1']
+                });
+                playFestiveSound(659.25);
+            } else {
+                diyaBtnText.innerText = "Light Up Diyas";
+                diyaIcon.innerText = "🪔";
+            }
+        }
+
+        function lightSingleDiya(element) {
+            const flames = element.querySelectorAll('.diya-flame');
+            flames.forEach(flame => flame.classList.toggle('hidden'));
+            
+            confetti({
+                particleCount: 20,
+                spread: 40,
+                origin: { 
+                    x: (element.getBoundingClientRect().left + element.getBoundingClientRect().width / 2) / window.innerWidth,
+                    y: (element.getBoundingClientRect().top) / window.innerHeight
+                },
+                colors: ['#FFD700', '#FF85A1']
+            });
+            playFestiveSound(783.99);
+        }
+
+        // Fireworks Animation
+        const canvas = document.getElementById('fireworksCanvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        class Particle {
+            constructor(x, y, color) {
+                this.x = x;
+                this.y = y;
+                this.color = color;
+                const angle = Math.random() * Math.PI * 2;
+                const speed = Math.random() * 5 + 2;
+                this.vx = Math.cos(angle) * speed;
+                this.vy = Math.sin(angle) * speed;
+                this.alpha = 1;
+                this.decay = Math.random() * 0.02 + 0.015;
+                this.radius = Math.random() * 3 + 1.5;
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.vy += 0.04;
+                this.alpha -= this.decay;
+            }
+
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.alpha;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.shadowBlur = 8;
+                ctx.shadowColor = this.color;
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        function launchFireworks() {
+            const colors = ['#FFD700', '#FF85A1', '#FF4500', '#00F0FF', '#9D4EDD'];
+            for (let b = 0; b < 3; b++) {
+                setTimeout(() => {
+                    const x = Math.random() * (canvas.width * 0.8) + (canvas.width * 0.1);
+                    const y = Math.random() * (canvas.height * 0.4) + (canvas.height * 0.15);
+                    const color = colors[Math.floor(Math.random() * colors.length)];
+                    for (let i = 0; i < 40; i++) {
+                        particles.push(new Particle(x, y, color));
+                    }
+                    playFestiveSound(523.25 + Math.random() * 200);
+                }, b * 200);
+            }
+
+            confetti({
+                particleCount: 80,
+                spread: 90,
+                origin: { y: 0.6 }
+            });
+        }
+
+        function animateFireworks() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles = particles.filter(p => p.alpha > 0);
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            requestAnimationFrame(animateFireworks);
+        }
+        animateFireworks();
+
+        // Dialogue Quotes (Always "Tum / Aap")
+        const teddyQuotes = [
+            "Drishti Ji, aap meri sabse achhi dost ho! Is Diwali saare gusse ko bye-bye bol do na! 💖",
+            "Aapki smile mere liye sabse zaroori hai! Humesha aise hi muskuraate rahiye! ✨",
+            "Aapke bina ye festival bilkul phika hai Drishti Ji! Ek pyaari si hug accept kar lijiye! 🧸",
+            "Aage se aapko kabhi naraz nahi karunga, ye mera pakka promise hai! 🤝💕",
+            "Happy Diwali Drishti Ji! Aapki life me bohot saari khushiyan aur mithai aaye! 🍬🪔"
+        ];
+        let quoteIndex = 0;
+
+        function interactMainTeddy() {
+            quoteIndex = (quoteIndex + 1) % teddyQuotes.length;
+            const speechText = document.getElementById('teddySpeechText');
+            speechText.style.opacity = '0';
+            setTimeout(() => {
+                speechText.innerText = `"${teddyQuotes[quoteIndex]}"`;
+                speechText.style.opacity = '1';
+            }, 150);
+
+            confetti({
+                particleCount: 35,
+                spread: 50,
+                origin: { y: 0.5 },
+                colors: ['#FF85A1', '#FFD700', '#FFFFFF']
+            });
+            playFestiveSound(783.99);
+        }
+
+        function sendTeddyHug() {
+            const speechText = document.getElementById('teddySpeechText');
+            speechText.style.opacity = '0';
+            setTimeout(() => {
+                speechText.innerText = '"Drishti Ji ne ek bohot pyaari Warm Teddy Hug accept kar li hai! Ab saari narazgi door ho gayi! 🥰🧸💖"';
+                speechText.style.opacity = '1';
+            }, 150);
+
+            confetti({
+                particleCount: 100,
+                spread: 100,
+                origin: { y: 0.6 },
+                colors: ['#FF85A1', '#E91E63', '#FFD700']
+            });
+            playFestiveSound(880);
+        }
+
+        // Forgive Poll Interaction
+        let noClicks = 0;
+        const dodgeMessages = [
+            "Itni jaldi nahi! 😜",
+            "Pehle thoda aur manao! 🥺",
+            "Catch me if you can! 🏃‍♀️💨",
+            "Galti badi thi aapki! 🙈",
+            "Drishti Ji seeker mode ON! ✨",
+            "Haha pakad ke dikhao! 👻",
+            "Abhi 50% gussa baki hai! 🌶️",
+            "Green button dabao na! 🥰"
+        ];
+
+        function handleForgiveYes() {
+            const statusText = document.getElementById('forgiveStatusText');
+            const noBtn = document.getElementById('noForgiveBtn');
+            
+            // Reset runaway button position and hide it
+            noBtn.style.position = 'static';
+            noBtn.style.transform = 'none';
+            noBtn.classList.add('hidden');
+
+            statusText.innerHTML = "<span class='text-yellow-300 font-bold text-lg sm:text-xl animate-bounce-soft block'>Yayyy! Drishti Ji maan gayi! Best Diwali Ever! 🥰🎆✨</span>";
+            confetti({
+                particleCount: 180,
+                spread: 140,
+                origin: { y: 0.5 },
+                colors: ['#FFD700', '#4ADE80', '#FF85A1', '#E91E63']
+            });
+            playFestiveSound(1046.50);
+        }
+
+        function dodgeNoButton() {
+            noClicks++;
+            const noBtn = document.getElementById('noForgiveBtn');
+            const statusText = document.getElementById('forgiveStatusText');
+
+            // Set absolute position on body to teleport anywhere on screen freely
+            noBtn.style.position = 'fixed';
+            noBtn.style.zIndex = '50';
+
+            // Calculate safe random coordinates across the viewport so it never leaves the screen
+            const padding = 60;
+            const btnWidth = noBtn.offsetWidth || 180;
+            const btnHeight = noBtn.offsetHeight || 50;
+
+            const maxX = window.innerWidth - btnWidth - padding;
+            const maxY = window.innerHeight - btnHeight - padding;
+
+            const randomX = Math.max(padding, Math.floor(Math.random() * maxX));
+            const randomY = Math.max(padding, Math.floor(Math.random() * maxY));
+
+            noBtn.style.left = `${randomX}px`;
+            noBtn.style.top = `${randomY}px`;
+
+            // Change button text to playful teasing Hinglish phrase
+            const randomMsg = dodgeMessages[Math.floor(Math.random() * dodgeMessages.length)];
+            noBtn.innerText = randomMsg;
+
+            // Subtle rotation and scale effect for erratic fun movement
+            const randomRot = (Math.random() - 0.5) * 24;
+            noBtn.style.transform = `scale(1.05) rotate(${randomRot}deg)`;
+
+            // Update status hint
+            statusText.innerText = "Yeh button pakadna mushkil hi nahi, namumkin hai! Red button chhodke Green dabaiye! 😜";
+
+            // Sound feedback
+            playFestiveSound(440 + Math.random() * 300);
+        }
+
+        // Audio synthesizer logic
+        let audioCtx = null;
+        let isMusicPlaying = false;
+        let musicalSequenceTimer = null;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function playFestiveSound(freq = 523.25) {
+            try {
+                initAudio();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.7);
+
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.7);
+            } catch (e) {}
+        }
+
+        function toggleMusic() {
+            initAudio();
+            const musicIcon = document.getElementById('musicIcon');
+            const musicText = document.getElementById('musicText');
+
+            isMusicPlaying = !isMusicPlaying;
+
+            if (isMusicPlaying) {
+                musicIcon.innerText = "🔊";
+                musicText.innerText = "Playing Tunes";
+                const notes = [523.25, 587.33, 659.25, 783.99, 880.00, 1046.50];
+                let noteIdx = 0;
+                musicalSequenceTimer = setInterval(() => {
+                    playFestiveSound(notes[noteIdx]);
+                    noteIdx = (noteIdx + 1) % notes.length;
+                }, 400);
+            } else {
+                musicIcon.innerText = "🎵";
+                musicText.innerText = "Festive Music";
+                if (musicalSequenceTimer) clearInterval(musicalSequenceTimer);
+            }
+        }
+    </script>
+</body>
+</html>
